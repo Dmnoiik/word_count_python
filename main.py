@@ -1,39 +1,51 @@
 import os
+import re
 
-files2 = [f for f in os.listdir() if f[-3:] == 'txt']
-def separate_lines(lines):
+text_files = [f for f in os.listdir() if f[-3:] == 'txt']
+
+
+def separate_lines(lines: list) -> list:
+    """
+    Function which removes all empty lines from list received from reading text file
+    :param lines:
+    :return:
+    """
     return [line for line in lines if line != "\n"]
 
-def filter_file(file_string: str) -> list:
-    bad_chars = [',', '.', ';', '\n', '!']
-    for i in bad_chars:
-        if i in file_string:
-            file_string = file_string.replace(i, '')
-    return file_string.split(" ")
+
+def remove_special_characters(file_string):
+    filtered_text = re.sub('[,./;\n]', " ", file_string)
+    return filtered_text
 
 
-def count_occurencies(word_list: list, searched_word: str):
+def count_occurrences(word_list: list, searched_word: str):
     word_count = 0
-    for word in word_list:
-        if word.lower() == searched_word.lower():
-            word_count += 1
+    for line in word_list:
+        for word in line.split(' '):
+            if word.lower() == searched_word.lower():
+                word_count += 1
     return word_count
 
 
 while True:
-    text_file_input = input(f"Please select file to count specific words in, out of: {', '.join(files2)} ")
+    print(f"Please select file to count specific words in, out of: ")
+    for index, el in enumerate(text_files):
+        print(F"{index + 1}: {el}")
+    text_file_input = int(input())
+
     try:
-        with open(text_file_input, 'r') as text_file:
+        with open(text_files[text_file_input - 1], 'r') as text_file:
             all_lines = separate_lines(text_file.readlines())
+            words_list = list(map(remove_special_characters, all_lines))
             if not all_lines:
                 print("File contains no words, please select different one")
             else:
                 break
     except FileNotFoundError:
         print("File not found, did you make a typo?")
+    except IndexError:
+        print("Please select one of available files.")
 
-# words_list = filter_file(all_text)
+count_input = input("Which word would you like to make a count for? ")
 #
-# count_input = input("Which word would you like to make a count for? ")
-#
-# print(f"There are {count_occurencies(words_list, count_input)} occurencies of a word '{count_input}' in selected file.")
+print(f"There are {count_occurrences(words_list, count_input)} occurencies of a word '{count_input}' in selected file.")
